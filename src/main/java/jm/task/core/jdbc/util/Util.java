@@ -5,6 +5,10 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 
+import java.lang.reflect.InvocationTargetException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Properties;
 
 public class Util {
@@ -13,6 +17,24 @@ public class Util {
     private static final String USER = "jpa_user";
     private static final String PWD = "jpa_pwd";
     private static final String DB_Driver = "com.mysql.cj.jdbc.Driver";
+
+    private static Connection connection = null;
+
+    public static Connection getConnection() {
+        if (connection == null) {
+            try {
+                Class.forName(DB_Driver).getDeclaredConstructor().newInstance();
+                connection = DriverManager.getConnection(DB_URL, USER, PWD);
+                System.out.println("Успешное соединение с БД");
+            } catch (ClassNotFoundException | InstantiationException |
+                     IllegalAccessException | NoSuchMethodException | SQLException e) {
+                System.out.println("Ошибка при установке соединения с БД: " + e.getMessage());
+            } catch (InvocationTargetException e) {
+                System.out.println("Ошибка при создании драйвера: " + e.getCause().getMessage());
+            }
+        }
+        return connection;
+    }
 
 
     private static SessionFactory sessionFactory;
@@ -40,5 +62,20 @@ public class Util {
             }
         }
         return sessionFactory;
+    }
+
+    public static void closeConnection() {
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+            System.out.println("Соединение с базой данных успешно закрыто");
+    }
+
+
+    public static void closeSessionFactory() {
+        sessionFactory.close();
+        System.out.println("Закрытие SessionFactory");
     }
 }

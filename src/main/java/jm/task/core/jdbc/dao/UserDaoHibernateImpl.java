@@ -15,7 +15,6 @@ public class UserDaoHibernateImpl implements UserDao {
     public UserDaoHibernateImpl() {
     }
 
-    @Override
     public void createUsersTable() {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
@@ -34,7 +33,6 @@ public class UserDaoHibernateImpl implements UserDao {
         }
     }
 
-    @Override
     public void dropUsersTable() {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
@@ -46,22 +44,25 @@ public class UserDaoHibernateImpl implements UserDao {
         }
     }
 
-    @Override
     public void saveUser(String name, String lastName, byte age) {
+        Transaction userTransaction = null;
         try (Session session = sessionFactory.openSession()) {
-            Transaction userTransaction = session.beginTransaction();
+            userTransaction = session.beginTransaction();
             User newUser = new User(name, lastName, age);
             session.persist(newUser);
             userTransaction.commit();
         } catch (Exception e) {
             System.out.println("Ошибка при сохранении пользователя : " + e.getMessage());
+            if (userTransaction != null && userTransaction.isActive()) {
+            userTransaction.rollback();
+            }
         }
     }
 
-    @Override
     public void removeUserById(long id) {
+        Transaction userTransaction = null;
         try (Session session = sessionFactory.openSession()) {
-            Transaction userTransaction = session.beginTransaction();
+            userTransaction = session.beginTransaction();
             User userToRemove = session.get(User.class, id);
             if (userToRemove != null) {
                 session.remove(userToRemove);
@@ -69,10 +70,29 @@ public class UserDaoHibernateImpl implements UserDao {
             userTransaction.commit();
         } catch (Exception e) {
             System.out.println("Ошибка при удалении пользователя с id " + id + ": " + e.getMessage());
+            if (userTransaction != null && userTransaction.isActive()) {
+                userTransaction.rollback();
+            }
         }
     }
 
-    @Override
+//    public void removeUserById(long id) {
+//        Transaction transaction = null;
+//        try (Session session = sessionFactory.openSession()) {
+//            Transaction userTransaction = session.beginTransaction();
+//            User userToRemove = session.get(User.class, id);
+//            if (userToRemove != null) {
+//                session.remove(userToRemove);
+//            }
+//            userTransaction.commit();
+//        } catch (Exception e) {
+//            System.out.println("Ошибка при удалении пользователя с id " + id + ": " + e.getMessage());
+//            if (transaction != null && transaction.isActive()) {
+//                transaction.rollback();
+//            }
+//        }
+//    }
+
     public List<User> getAllUsers() {
         try (Session session = sessionFactory.openSession()) {
             return session.createQuery("from User", User.class)
@@ -83,7 +103,6 @@ public class UserDaoHibernateImpl implements UserDao {
         }
     }
 
-    @Override
     public void cleanUsersTable() {
         try (Session session = sessionFactory.openSession()) {
             session.beginTransaction();
