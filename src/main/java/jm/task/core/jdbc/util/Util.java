@@ -65,12 +65,14 @@ public class Util {
     }
 
     public static void closeConnection() {
-        try {
-            connection.close();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        if (connection != null) {
+            try {
+                connection.close();
+                System.out.println("Соединение с базой данных успешно закрыто");
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
         }
-            System.out.println("Соединение с базой данных успешно закрыто");
     }
 
 

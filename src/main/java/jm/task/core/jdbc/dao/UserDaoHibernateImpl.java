@@ -76,23 +76,6 @@ public class UserDaoHibernateImpl implements UserDao {
         }
     }
 
-//    public void removeUserById(long id) {
-//        Transaction transaction = null;
-//        try (Session session = sessionFactory.openSession()) {
-//            Transaction userTransaction = session.beginTransaction();
-//            User userToRemove = session.get(User.class, id);
-//            if (userToRemove != null) {
-//                session.remove(userToRemove);
-//            }
-//            userTransaction.commit();
-//        } catch (Exception e) {
-//            System.out.println("Ошибка при удалении пользователя с id " + id + ": " + e.getMessage());
-//            if (transaction != null && transaction.isActive()) {
-//                transaction.rollback();
-//            }
-//        }
-//    }
-
     public List<User> getAllUsers() {
         try (Session session = sessionFactory.openSession()) {
             return session.createQuery("from User", User.class)
